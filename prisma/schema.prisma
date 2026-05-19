@@ -1,0 +1,55 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL") // <-- Use the word "DATABASE_URL" here!
+ 
+}
+
+// 1. Users Table (Admin, Teacher, Student)
+model User {
+  id        Int       @id @default(autoincrement())
+  name      String
+  email     String    @unique
+  password  String
+  role      String    @default("STUDENT") // Can be ADMIN, TEACHER, or STUDENT
+  attempts  Attempt[] // Relation: A user can have many exam attempts
+  createdAt DateTime  @default(now())
+}
+
+// 2. Exams Table
+model Exam {
+  id            Int        @id @default(autoincrement())
+  title         String
+  description   String?
+  durationMins  Int
+  passingMarks  Int
+  questions     Question[] // Relation: An exam has many questions
+  attempts      Attempt[]  // Relation: An exam has many attempts
+  createdAt     DateTime   @default(now())
+}
+
+// 3. Questions Table (Multiple Choice)
+model Question {
+  id              Int      @id @default(autoincrement())
+  examId          Int
+  exam            Exam     @relation(fields: [examId], references: [id])
+  questionText    String
+  options         Json     // Stores options like: [{"id":"A", "text":"Paris"}, {"id":"B", "text":"London"}]
+  correctOptionId String   // Stores "A", "B", etc.
+  marks           Int      @default(1)
+}
+
+// 4. Attempts Table (Tracking student submissions)
+model Attempt {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  examId    Int
+  exam      Exam     @relation(fields: [examId], references: [id])
+  score     Int      @default(0)
+  startedAt DateTime @default(now())
+  status    String   @default("COMPLETED") // Could be PENDING or COMPLETED
+}

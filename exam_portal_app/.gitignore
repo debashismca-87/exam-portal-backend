@@ -1,0 +1,7 @@
+# Node.js backend ignores
+node_modules/
+.env
+
+# Flutter frontend ignores
+exam_portal_app/build/
+exam_portal_app/.dart_tool/
